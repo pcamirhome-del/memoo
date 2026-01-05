@@ -1,7 +1,7 @@
 
 import { User, Product, Vendor, Invoice, Sale, AppSettings, UserRole, OrderRequest } from './types';
 
-// إعدادات Firebase (تم دمجها برمجياً لاستخدامها في التوسعات القادمة)
+// إعدادات Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyAYdWvZbTTkGlfI6vv02EFUMbw5eeF4UpU",
   authDomain: "sample-firebase-adddi-app.firebaseapp.com",
@@ -49,7 +49,6 @@ const initialSettings: AppSettings = {
   profitMargin: 15
 };
 
-// بيانات تجريبية لملء النظام عند التشغيل الأول
 const seedData = {
   vendors: [
     { id: 'v1', code: '100', name: 'شركة النيل للتوريدات', balance: 5400 },
@@ -64,7 +63,11 @@ const seedData = {
 export const getStoredData = <T,>(key: string, defaultValue: T): T => {
   if (typeof window === 'undefined') return defaultValue;
   const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : defaultValue;
+  try {
+    return data ? JSON.parse(data) : defaultValue;
+  } catch (e) {
+    return defaultValue;
+  }
 };
 
 export const setStoredData = <T,>(key: string, value: T): void => {
@@ -73,40 +76,36 @@ export const setStoredData = <T,>(key: string, value: T): void => {
   }
 };
 
-// دالة تهيئة النظام بالبيانات لأول مرة
 export const initializeSystem = () => {
+  if (typeof window === 'undefined') return;
   const isInitialized = localStorage.getItem(STORAGE_KEYS.INITIALIZED);
   if (!isInitialized) {
-    saveUsers(initialUsers);
-    saveSettings(initialSettings);
-    saveVendors(seedData.vendors);
-    saveProducts(seedData.products);
+    setStoredData(STORAGE_KEYS.USERS, initialUsers);
+    setStoredData(STORAGE_KEYS.SETTINGS, initialSettings);
+    setStoredData(STORAGE_KEYS.VENDORS, seedData.vendors);
+    setStoredData(STORAGE_KEYS.PRODUCTS, seedData.products);
     localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
     console.log("System Initialized with seed data");
   }
 };
 
+// تنفيذ التهيئة فوراً عند تحميل الموديول
+initializeSystem();
+
 // Data Helpers
 export const getUsers = () => getStoredData<User[]>(STORAGE_KEYS.USERS, initialUsers);
 export const saveUsers = (users: User[]) => setStoredData(STORAGE_KEYS.USERS, users);
-
 export const getProducts = () => getStoredData<Product[]>(STORAGE_KEYS.PRODUCTS, []);
 export const saveProducts = (products: Product[]) => setStoredData(STORAGE_KEYS.PRODUCTS, products);
-
 export const getVendors = () => getStoredData<Vendor[]>(STORAGE_KEYS.VENDORS, []);
 export const saveVendors = (vendors: Vendor[]) => setStoredData(STORAGE_KEYS.VENDORS, vendors);
-
 export const getInvoices = () => getStoredData<Invoice[]>(STORAGE_KEYS.INVOICES, []);
 export const saveInvoices = (invoices: Invoice[]) => setStoredData(STORAGE_KEYS.INVOICES, invoices);
-
 export const getSales = () => getStoredData<Sale[]>(STORAGE_KEYS.SALES, []);
 export const saveSales = (sales: Sale[]) => setStoredData(STORAGE_KEYS.SALES, sales);
-
 export const getOrders = () => getStoredData<OrderRequest[]>(STORAGE_KEYS.ORDERS, []);
 export const saveOrders = (orders: OrderRequest[]) => setStoredData(STORAGE_KEYS.ORDERS, orders);
-
 export const getSettings = () => getStoredData<AppSettings>(STORAGE_KEYS.SETTINGS, initialSettings);
 export const saveSettings = (settings: AppSettings) => setStoredData(STORAGE_KEYS.SETTINGS, settings);
-
 export const getCurrentUser = () => getStoredData<User | null>(STORAGE_KEYS.CURRENT_USER, null);
 export const setCurrentUser = (user: User | null) => setStoredData(STORAGE_KEYS.CURRENT_USER, user);

@@ -24,19 +24,24 @@ import BarcodePrint from './pages/BarcodePrint';
 import AdminSettings from './pages/Settings';
 import Orders from './pages/Orders';
 import { User, UserRole } from './types';
-import { getCurrentUser, setCurrentUser, getSettings, initializeSystem } from './store';
+import { getCurrentUser, setCurrentUser, getSettings } from './store';
 
 const App: React.FC = () => {
-  // تهيئة النظام عند أول تشغيل
-  useEffect(() => {
-    initializeSystem();
-  }, []);
-
-  const [user, setUser] = useState<User | null>(getCurrentUser());
+  const [user, setUser] = useState<User | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [appName, setAppName] = useState(getSettings().appName);
+  const [appName, setAppName] = useState('سوبر ماركت');
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // تحميل البيانات عند بدء التشغيل
+  useEffect(() => {
+    const currentUser = getCurrentUser();
+    if (currentUser) {
+      setUser(currentUser);
+    }
+    const settings = getSettings();
+    setAppName(settings.appName);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -48,9 +53,12 @@ const App: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isSidebarOpen]);
 
+  // تحديث اسم التطبيق عند تغيير الإعدادات
   useEffect(() => {
-    const settings = getSettings();
-    setAppName(settings.appName);
+    if (activeTab === 'settings' || activeTab === 'dashboard') {
+      const settings = getSettings();
+      setAppName(settings.appName);
+    }
   }, [activeTab]);
 
   const handleLogout = () => {
@@ -99,7 +107,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex bg-gray-100 font-sans" dir="rtl">
-      {/* Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 bg-black bg-opacity-50 z-20 transition-opacity lg:hidden"
@@ -107,7 +114,6 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Sidebar */}
       <aside 
         ref={sidebarRef}
         className={`fixed inset-y-0 right-0 z-30 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
@@ -159,9 +165,7 @@ const App: React.FC = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
         <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8 shrink-0">
           <div className="flex items-center">
             <button 
@@ -180,7 +184,6 @@ const App: React.FC = () => {
           </div>
         </header>
 
-        {/* Scrollable Area */}
         <main className="flex-1 overflow-auto p-4 lg:p-8 bg-gray-50">
           {renderContent()}
         </main>
