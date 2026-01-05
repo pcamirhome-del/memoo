@@ -33,7 +33,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         onLogin(foundUser);
       }, 1500);
     } else {
-      setError('خطأ في اسم المستخدم أو كلمة المرور');
+      setError('خطأ في اسم المستخدم أو كلمة المرور (تأكد من admin/admin)');
     }
   };
 

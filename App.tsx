@@ -24,9 +24,14 @@ import BarcodePrint from './pages/BarcodePrint';
 import AdminSettings from './pages/Settings';
 import Orders from './pages/Orders';
 import { User, UserRole } from './types';
-import { getCurrentUser, setCurrentUser, getSettings } from './store';
+import { getCurrentUser, setCurrentUser, getSettings, initializeSystem } from './store';
 
 const App: React.FC = () => {
+  // تهيئة النظام عند أول تشغيل
+  useEffect(() => {
+    initializeSystem();
+  }, []);
+
   const [user, setUser] = useState<User | null>(getCurrentUser());
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -87,7 +92,10 @@ const App: React.FC = () => {
     { id: 'settings', label: 'الإعدادات', icon: <Settings size={20} />, permission: 'settings' },
   ];
 
-  const allowedMenuItems = menuItems.filter(item => user.permissions[item.permission as keyof typeof user.permissions]);
+  const allowedMenuItems = menuItems.filter(item => {
+    const permKey = item.permission as keyof typeof user.permissions;
+    return user.permissions[permKey];
+  });
 
   return (
     <div className="min-h-screen flex bg-gray-100 font-sans" dir="rtl">
